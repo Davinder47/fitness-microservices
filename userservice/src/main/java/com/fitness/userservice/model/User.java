@@ -43,6 +43,6 @@ public class User {
     private LocalDateTime createdAt;
 
     @UpdateTimestamp //Whenever an Entity instance is updated in the
-    // table/DB, below field will be automatically populated/updated
+    // table or DB, below field will be automatically populated/updated
     private LocalDateTime updatedAt;
 }
