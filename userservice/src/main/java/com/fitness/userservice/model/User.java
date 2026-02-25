@@ -39,7 +39,7 @@ public class User {
     private UserRole role = UserRole.USER;
 
     @CreationTimestamp //Whenever an Entity instance is inserted into the
-    // table/DB, below field will be automatically populated
+    // table or DB, below field will be automatically populated
     private LocalDateTime createdAt;
 
     @UpdateTimestamp //Whenever an Entity instance is updated in the
