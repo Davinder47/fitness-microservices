@@ -17,6 +17,12 @@ public class UserService {
 
     //Method where we will be registering the user into aur application
     public UserResponse register(RegisterRequest request) {
+
+        //Adding some Validations
+        if (repository.existsByEmail(request.getEmail())){
+            throw new RuntimeException("Email already exists");
+        }
+
         //First we will create User object and set his things
         User user = new User();
         user.setEmail(request.getEmail());
