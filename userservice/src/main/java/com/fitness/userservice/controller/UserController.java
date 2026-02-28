@@ -24,7 +24,7 @@ public class UserController {
         //which is going to represent the response
     }
 
-    @GetMapping("/register")
+    @PostMapping("/register")
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request){
         return ResponseEntity.ok(userService.register(request));
     }

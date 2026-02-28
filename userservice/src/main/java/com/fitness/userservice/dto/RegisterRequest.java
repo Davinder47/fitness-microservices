@@ -11,7 +11,6 @@ import lombok.Data;
 // like in email and password. When request hits this controller, it will be validated
 @Data//For getters and setters
 public class RegisterRequest {
-
     //To define user we need:
 
     //In case Validation fails then print(@Valid is used here):
