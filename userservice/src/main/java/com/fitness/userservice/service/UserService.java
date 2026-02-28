@@ -8,14 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-
-//Method where we will be registering the user into aur application
 public class UserService {
 
     //Getting instance of repository
     @Autowired
     private UserRepository repository;
 
+
+    //Method where we will be registering the user into aur application
     public UserResponse register(RegisterRequest request) {
         //First we will create User object and set his things
         User user = new User();
@@ -24,7 +24,17 @@ public class UserService {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
 
-        repository.save(user);
+        //After registration, we need return the user response, below will do this
+        User savedUser = repository.save(user);
+        UserResponse userResponse = new UserResponse();
+        userResponse.setId(savedUser.getId());
+        userResponse.setPassword(savedUser.getPassword());
+        userResponse.setEmail(savedUser.getEmail());
+        userResponse.setFirstName(savedUser.getFirstName());
+        userResponse.setLastName(savedUser.getLastName());
+        userResponse.setCreatedAt(savedUser.getCreatedAt());
+        userResponse.setCreatedAt(savedUser.getUpdatedAt());
+        return userResponse;
 
         //Now we will save the user into our database,
         // we need repository layer for this i.e UserRepository(which is an interface)
