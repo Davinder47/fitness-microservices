@@ -1,12 +1,19 @@
 package com.fitness.userservice.controller;
 
+import com.fitness.userservice.dto.RegisterRequest;
 import com.fitness.userservice.dto.UserResponse;
+import com.fitness.userservice.service.UserService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController //To mark this class as Controller
 @RequestMapping("/api/users") //To use Mappings
 public class UserController {
+
+    @Autowired
+    private UserService userService;
 
     //Defining endpoints here
 
@@ -18,7 +25,7 @@ public class UserController {
     }
 
     @GetMapping("/register")
-    public ResponseEntity<UserResponse> register(@RequestBody RegisterRequest request){
-        return ResponseEntity.ok(request.register(request));
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request){
+        return ResponseEntity.ok(userService.register(request));
     }
 }
