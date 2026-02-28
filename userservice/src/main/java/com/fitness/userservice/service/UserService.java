@@ -4,6 +4,7 @@ import com.fitness.userservice.dto.RegisterRequest;
 import com.fitness.userservice.dto.UserResponse;
 import com.fitness.userservice.model.User;
 import com.fitness.userservice.repository.UserRepository;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,5 +46,25 @@ public class UserService {
         //Now we will save the user into our database,
         // we need repository layer for this i.e UserRepository(which is an interface)
 
+    }
+
+    //Following method will enable us to get user profile
+    public UserResponse getUserProfile(String userId) {
+        //Following will find user by id and give it to user object if user
+        //exists by id or else will throw exception
+        User user = repository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User Not Found"));
+
+        //Creating user response again for getUserProfile function and returning it
+        UserResponse userResponse = new UserResponse();
+        userResponse.setId(user.getId());
+        userResponse.setPassword(user.getPassword());
+        userResponse.setEmail(user.getEmail());
+        userResponse.setFirstName(user.getFirstName());
+        userResponse.setLastName(user.getLastName());
+        userResponse.setCreatedAt(user.getCreatedAt());
+        userResponse.setCreatedAt(user.getUpdatedAt());
+
+        return userResponse;
     }
 }
