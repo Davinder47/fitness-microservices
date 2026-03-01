@@ -16,7 +16,7 @@ public class UserService {
     private UserRepository repository;
 
 
-    //Method where we will be registering the user into aur application
+    //This Method will be registering the user into aur application
     public UserResponse register(RegisterRequest request) {
 
         //Adding some Validations
