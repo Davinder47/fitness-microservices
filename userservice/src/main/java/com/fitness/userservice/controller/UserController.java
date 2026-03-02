@@ -21,7 +21,7 @@ public class UserController {
     public ResponseEntity<UserResponse> getUserProfile(@PathVariable String userId){
         return ResponseEntity.ok(userService.getUserProfile(userId));
         //UserResponse is a DTO(Data Transfer Object) which we created later,
-        //which is going to represent the response
+        //which is going to represent the response i.e what should be the response
     }
 
     @PostMapping("/register")
