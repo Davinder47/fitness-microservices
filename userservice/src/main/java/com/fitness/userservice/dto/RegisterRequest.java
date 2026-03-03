@@ -8,7 +8,8 @@ import lombok.Data;
 //Here we will define as to what all we want to accept from the user,
 //as a part of the request
 //The @Valid annotation which we defined in Controller is being used here,
-// like in email and password. When request hits this controller, it will be validated
+// like in email and password. When request hits this controller, it will
+// be validated
 @Data//For getters and setters
 public class RegisterRequest {
     //To define user we need:
