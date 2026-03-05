@@ -1,7 +1,7 @@
 package com.example.activityservice.model;
 
-//ActivityType is a enum which defines the type of activity that our app allows
 public enum ActivityType {
+    //ActivityType is a enum which defines the type of activity that our app allows
     RUNNING,
     WALKING,
     CYCLING,
@@ -12,5 +12,4 @@ public enum ActivityType {
     CARDIO,
     STRETCHING,
     OTHER
-
 }
