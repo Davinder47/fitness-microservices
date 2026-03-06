@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/activities")
+@AllArgsConstructor//Using this spring will automatically inject "activityservice"
+//dependency, otherwise you will get null point exception when you try
+//to make use of activity service
 public class ActivityController {
 
-    @Autowired//Using this spring will automatically inject "activityservice"
-    //dependency, otherwise you will get null point exception when you try
-    //to make use of activity service
     private ActivityService activityService;
 
     //ActivityResponse class is going to be a DTO class that is going to return
