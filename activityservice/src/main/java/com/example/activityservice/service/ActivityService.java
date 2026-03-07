@@ -5,7 +5,11 @@ import com.example.activityservice.dto.ActivityRequest;
 import com.example.activityservice.dto.ActivityResponse;
 import com.example.activityservice.model.Activity;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor//to inject the activityRepository automatically injected
@@ -47,5 +51,17 @@ public class ActivityService {
         response.setUpdatedAt(activity.getUpdatedAt());
 
         return response;
+    }
+
+    public List<ActivityResponse> getUserActivity(String userId) {
+    //This method will interact with the DB and will give us the List of
+    //activities of the user with particular userId
+        List<Activity> activities = activityRepository.findByUserId(userId);
+
+        //Below we will convert every item in this list into the type of activity
+        //response, so we will do mapping below
+        return activities.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 }

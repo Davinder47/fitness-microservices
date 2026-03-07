@@ -7,10 +7,9 @@ import com.example.activityservice.service.ActivityService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/activities")
@@ -27,5 +26,12 @@ public class ActivityController {
     @PostMapping //This mapping will help us to track the activity
     public ResponseEntity<ActivityResponse> trackActivity(@RequestBody ActivityRequest request){
         return ResponseEntity.ok(activityService.trackActivity(request));
+    }
+
+    @GetMapping//This mapping will help us to get the activity of a user
+    public ResponseEntity<List<ActivityResponse>> getUserActivities(@RequestHeader("X-User-ID") String userId){
+        //ActivityResponse represents single activity and a user can have
+        //multiple activities, that's why we are using List here
+        return ResponseEntity.ok(activityService.getUserActivity(userId));
     }
 }
