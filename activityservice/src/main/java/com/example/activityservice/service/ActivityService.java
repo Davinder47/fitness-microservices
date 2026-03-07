@@ -5,7 +5,6 @@ import com.example.activityservice.dto.ActivityRequest;
 import com.example.activityservice.dto.ActivityResponse;
 import com.example.activityservice.model.Activity;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -53,7 +52,7 @@ public class ActivityService {
         return response;
     }
 
-    public List<ActivityResponse> getUserActivity(String userId) {
+    public List<ActivityResponse> getUserActivities(String userId) {
     //This method will interact with the DB and will give us the List of
     //activities of the user with particular userId
         List<Activity> activities = activityRepository.findByUserId(userId);
@@ -63,5 +62,12 @@ public class ActivityService {
         return activities.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    public ActivityResponse getActivityById(String activityId) {
+
+        return activityRepository.findById(activityId)
+                .map(this::mapToResponse)
+                .orElseThrow(() -> new RuntimeException("Activity Not Found with id: "+activityId));
     }
 }

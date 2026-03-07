@@ -5,7 +5,6 @@ import com.example.activityservice.dto.ActivityRequest;
 import com.example.activityservice.dto.ActivityResponse;
 import com.example.activityservice.service.ActivityService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +31,16 @@ public class ActivityController {
     public ResponseEntity<List<ActivityResponse>> getUserActivities(@RequestHeader("X-User-ID") String userId){
         //ActivityResponse represents single activity and a user can have
         //multiple activities, that's why we are using List here
-        return ResponseEntity.ok(activityService.getUserActivity(userId));
+        return ResponseEntity.ok(activityService.getUserActivities(userId));
     }
+
+    //Every activity has an id, when the user will pass the activity id we,
+    //should be able to filter out that particular activity
+    @GetMapping("/{activityId}")//This mapping will help us to get the activity of a user
+    public ResponseEntity<ActivityResponse> getActivity(@PathVariable String activityId){
+        //ActivityResponse represents single activity and a user can have
+        //multiple activities, that's why we are using List here
+        return ResponseEntity.ok(activityService.getActivityById(activityId));
+    }
+
 }
