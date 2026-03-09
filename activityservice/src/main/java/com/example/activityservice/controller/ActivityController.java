@@ -36,10 +36,8 @@ public class ActivityController {
 
     //Every activity has an id, when the user will pass the activity id we,
     //should be able to filter out that particular activity
-    @GetMapping("/{activityId}")//This mapping will help us to get the activity of a user
+    @GetMapping("/{activityId}")//This mapping will help us to get the particular activity of a user
     public ResponseEntity<ActivityResponse> getActivity(@PathVariable String activityId){
-        //ActivityResponse represents single activity and a user can have
-        //multiple activities, that's why we used list here
         return ResponseEntity.ok(activityService.getActivityById(activityId));
     }
 
