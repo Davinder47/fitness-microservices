@@ -2,7 +2,7 @@ package com.server.eureka;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
+//This is our third microservice
 @SpringBootApplication
 public class EurekaApplication {
 
