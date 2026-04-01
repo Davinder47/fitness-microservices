@@ -18,9 +18,15 @@ import java.util.stream.Collectors;
 public class ActivityService {
 
     private final ActivityRepository activityRepository;
-
+    private final UserValidationService userValidationService;
     //When the user will say trackActivity, we will actually save it into DB
     public ActivityResponse trackActivity(ActivityRequest request) {
+
+        //This code is added to validate user
+        boolean isValidUser = userValidationService.validateUser(request.getUserId());
+        if(!isValidUser){
+            throw new RuntimeException("Invalid User: "+ request.getUserId());
+        }
 
         Activity activity = Activity.builder()
                 .userId(request.getUserId())
