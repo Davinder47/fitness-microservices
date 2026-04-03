@@ -1,7 +1,7 @@
 package com.example.activityservice.service;
 
 
-//This service will interact with user-service and will actually validate user
+//This service is going to interact with user-service and will actually validate user
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
