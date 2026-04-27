@@ -11,10 +11,10 @@ public class GeminiService {
 
     private final WebClient webClient;
 
-    @Value("${gemini.spi.url}")
+    @Value("${gemini.api.url}")
     private String geminiApiUrl;
 
-    @Value("${gemini.spi.key}")
+    @Value("${gemini.api.key}")
     private String geminiApiKey;
 
     public GeminiService(WebClient.Builder webClientBuilder) {
