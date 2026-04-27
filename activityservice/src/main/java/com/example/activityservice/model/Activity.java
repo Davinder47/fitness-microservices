@@ -1,5 +1,6 @@
 package com.example.activityservice.model;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -18,7 +19,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Activity {
+public class Activity implements Serializable {
 
     @Id
     private String id;

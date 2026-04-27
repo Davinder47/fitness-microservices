@@ -5,11 +5,15 @@ import com.example.activityservice.dto.ActivityRequest;
 import com.example.activityservice.dto.ActivityResponse;
 import com.example.activityservice.model.Activity;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor//to inject the activityRepository automatically injected
 //Above will only generate constructor with required arguments like: final and
@@ -19,6 +23,15 @@ public class ActivityService {
 
     private final ActivityRepository activityRepository;
     private final UserValidationService userValidationService;
+    private final RabbitTemplate rabbitTemplate;
+
+    //Updation for RabbitMq
+    @Value("${rabbitmq.exchange.name}")
+    private String exchange;
+
+    //Updation for RabbitMq
+    @Value("${rabbitmq.routing.key}")
+    private String routingKey;
     //When the user will say trackActivity, we will actually save it into DB
     public ActivityResponse trackActivity(ActivityRequest request) {
 
@@ -38,6 +51,13 @@ public class ActivityService {
                 .build();
 
         Activity savedActivity = activityRepository.save(activity);
+
+        //Publish to RabbitMQ for AI Processing
+        try {
+            rabbitTemplate.convertAndSend(exchange,routingKey,savedActivity);
+        }catch (Exception e){
+            log.error("Failed to publish activity to RabbitMQ: ",e);
+        }
         return mapToResponse(savedActivity);
     }
 
