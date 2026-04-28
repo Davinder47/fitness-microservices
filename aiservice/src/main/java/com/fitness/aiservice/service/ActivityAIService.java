@@ -1,7 +1,7 @@
 package com.fitness.aiservice.service;
-//It will work with GeminiService to generate the recommendation and will
-//give it to us
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitness.aiservice.model.Activity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,16 +13,33 @@ import org.springframework.stereotype.Service;
 public class ActivityAIService {
 
     private final GeminiService geminiService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public String generateRecommendation(Activity activity){
+    public String generateRecommendation(Activity activity) {
         String prompt = createPromptForActivity(activity);
         String aiResponse = geminiService.getAnswer(prompt);
-        log.info("RESPONSE FROM AI: {}", aiResponse);
-        return aiResponse;
+        return extractTextFromResponse(aiResponse);
     }
 
-    //Here we will create a prompt which will tell the ai model to give
-    //us the data in a particular format
+    private String extractTextFromResponse(String aiResponse) {
+        try {
+            JsonNode root = objectMapper.readTree(aiResponse);
+            String text = root
+                    .path("candidates")
+                    .get(0)
+                    .path("content")
+                    .path("parts")
+                    .get(0)
+                    .path("text")
+                    .asText();
+            log.info("RESPONSE FROM AI: {}", text);
+            return text;
+        } catch (Exception e) {
+            log.error("Error parsing Gemini response: {}", e.getMessage());
+            return aiResponse; // fallback to raw response
+        }
+    }
+
     private String createPromptForActivity(Activity activity) {
         return String.format("""
             Analyze this fitness activity and provide detailed recommendations in the following EXACT JSON format:
@@ -66,5 +83,4 @@ public class ActivityAIService {
                 activity.getAdditionalMetrics()
         );
     }
-
 }
