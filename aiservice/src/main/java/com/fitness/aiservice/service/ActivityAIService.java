@@ -3,9 +3,14 @@ package com.fitness.aiservice.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitness.aiservice.model.Activity;
+import com.fitness.aiservice.model.Recommendation;
+import com.fitness.aiservice.repository.RecommendationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -13,30 +18,83 @@ import org.springframework.stereotype.Service;
 public class ActivityAIService {
 
     private final GeminiService geminiService;
+    private final RecommendationRepository recommendationRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public String generateRecommendation(Activity activity) {
+    public Recommendation generateRecommendation(Activity activity) {
         String prompt = createPromptForActivity(activity);
         String aiResponse = geminiService.getAnswer(prompt);
-        return extractTextFromResponse(aiResponse);
+        String extractedText = extractTextFromResponse(aiResponse);
+        return processAndSaveRecommendation(activity, extractedText);
     }
 
     private String extractTextFromResponse(String aiResponse) {
         try {
             JsonNode root = objectMapper.readTree(aiResponse);
-            String text = root
-                    .path("candidates")
+            String text = root.path("candidates")
                     .get(0)
                     .path("content")
                     .path("parts")
                     .get(0)
                     .path("text")
                     .asText();
-            log.info("RESPONSE FROM AI: {}", text);
+
+            text = text.replace("```json", "")
+                    .replace("```", "")
+                    .trim();
+
             return text;
         } catch (Exception e) {
-            log.error("Error parsing Gemini response: {}", e.getMessage());
-            return aiResponse; // fallback to raw response
+            log.error("Error extracting text from Gemini response: {}", e.getMessage());
+            return aiResponse;
+        }
+    }
+
+    private Recommendation processAndSaveRecommendation(Activity activity, String responseText) {
+        try {
+            JsonNode root = objectMapper.readTree(responseText);
+
+            // Extract analysis as single string
+            String analysis = root.path("analysis").toString();
+
+            // Extract improvements as List<String>
+            List<String> improvements = new ArrayList<>();
+            root.path("improvements").forEach(node ->
+                    improvements.add(node.path("area").asText()
+                            + ": " + node.path("recommendation").asText())
+            );
+
+            // Extract suggestions as List<String>
+            List<String> suggestions = new ArrayList<>();
+            root.path("suggestions").forEach(node ->
+                    suggestions.add(node.path("workout").asText()
+                            + ": " + node.path("description").asText())
+            );
+
+            // Extract safety as List<String>
+            List<String> safety = new ArrayList<>();
+            root.path("safety").forEach(node ->
+                    safety.add(node.asText())
+            );
+
+            // Build and save recommendation
+            Recommendation recommendation = Recommendation.builder()
+                    .activityId(activity.getId())
+                    .userId(activity.getUserId())
+                    .activityType(activity.getType())
+                    .recommendation(analysis)
+                    .improvements(improvements)
+                    .suggestions(suggestions)
+                    .safety(safety)
+                    .build();
+
+            Recommendation saved = recommendationRepository.save(recommendation);
+            log.info("Recommendation saved to MongoDB with id: {}", saved.getId());
+            return saved;
+
+        } catch (Exception e) {
+            log.error("Error processing recommendation: {}", e.getMessage());
+            return null;
         }
     }
 
