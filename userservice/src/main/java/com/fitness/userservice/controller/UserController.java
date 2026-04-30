@@ -1,5 +1,6 @@
 package com.fitness.userservice.controller;
 
+import com.fitness.userservice.dto.LoginRequest;
 import com.fitness.userservice.dto.RegisterRequest;
 import com.fitness.userservice.dto.UserResponse;
 import com.fitness.userservice.service.UserService;
@@ -27,6 +28,16 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request){
         return ResponseEntity.ok(userService.register(request));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request) {
+        // This calls the login method we added to UserService
+        String token = userService.login(request);
+
+        // We return the token as a simple string for now.
+        // Later, your React app will store this in localStorage.
+        return ResponseEntity.ok(token);
     }
 
     @GetMapping("/{userId}/validate")

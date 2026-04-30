@@ -1,77 +1,82 @@
 package com.fitness.userservice.service;
 
+import com.fitness.userservice.dto.LoginRequest;
 import com.fitness.userservice.dto.RegisterRequest;
 import com.fitness.userservice.dto.UserResponse;
 import com.fitness.userservice.model.User;
 import com.fitness.userservice.repository.UserRepository;
-import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
-@Slf4j
 public class UserService {
 
-    //Getting instance of repository
     @Autowired
-    private UserRepository repository;
+    private UserRepository userRepository;
 
+    @Autowired
+    private JwtService jwtService;
 
-    //This Method will be registering the user into aur application
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    // Updated Register logic to hash passwords
     public UserResponse register(RegisterRequest request) {
-
-        //Adding some Validations
-        if (repository.existsByEmail(request.getEmail())){
+        if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
 
-        //First we will create User object and set his things
         User user = new User();
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
+        // Hashing the password before saving
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        //After registration, we need return the user response, below will do this
-        User savedUser = repository.save(user);
-        UserResponse userResponse = new UserResponse();
-        userResponse.setId(savedUser.getId());
-        userResponse.setPassword(savedUser.getPassword());
-        userResponse.setEmail(savedUser.getEmail());
-        userResponse.setFirstName(savedUser.getFirstName());
-        userResponse.setLastName(savedUser.getLastName());
-        userResponse.setCreatedAt(savedUser.getCreatedAt());
-        userResponse.setCreatedAt(savedUser.getUpdatedAt());
-        return userResponse;
-
-        //Now we will save the user into our database,
-        // we need repository layer for this i.e UserRepository(which is an interface)
-
+        User savedUser = userRepository.save(user);
+        return mapToResponse(savedUser);
     }
 
-    //Following method will enable us to get user profile
+    // NEW Login logic
+    public String login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Verify the raw password against the hashed password
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        // Return the JWT token
+        return jwtService.generateToken(user);
+    }
+
+    private UserResponse mapToResponse(User user) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .password(user.getPassword())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .build();
+    }
+
     public UserResponse getUserProfile(String userId) {
-        //Following will find user by id and give it to user object if user
-        //exists by id or else will throw exception
-        User user = repository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User Not Found"));
+        // 1. Fetch user from database
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
-        //Creating user response again for getUserProfile function and returning it
-        UserResponse userResponse = new UserResponse();
-        userResponse.setId(user.getId());
-        userResponse.setPassword(user.getPassword());
-        userResponse.setEmail(user.getEmail());
-        userResponse.setFirstName(user.getFirstName());
-        userResponse.setLastName(user.getLastName());
-        userResponse.setCreatedAt(user.getCreatedAt());
-        userResponse.setCreatedAt(user.getUpdatedAt());
-
-        return userResponse;
+        // 2. Convert to DTO using the builder we just set up
+        return mapToResponse(user);
     }
 
-    public @Nullable Boolean existByUserId(String userId) {
-        log.info("Calling User Validation API for userId: {}", userId);
-        return repository.existsById(userId);
+    public boolean existByUserId(String userId) {
+        // This checks if a record with the given UUID exists in the MySQL/Postgres database
+        return userRepository.existsById(userId);
     }
 }
