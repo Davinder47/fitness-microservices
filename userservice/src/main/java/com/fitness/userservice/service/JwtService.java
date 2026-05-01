@@ -4,6 +4,7 @@ import com.fitness.userservice.model.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -14,8 +15,8 @@ import java.util.Map;
 @Service
 public class JwtService {
 
-    // Keeping it simple (NOT Base64)
-    private static final String SECRET = "yourFitnessAppSuperSecretKey123456789012345"; // >= 32 chars
+    @Value("${jwt.secret}")
+    private String secret;
 
     // Generate JWT Token
     public String generateToken(User user) {
@@ -38,6 +39,6 @@ public class JwtService {
     }
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET.getBytes());
+        return Keys.hmacShaKeyFor(secret.getBytes());
     }
 }
