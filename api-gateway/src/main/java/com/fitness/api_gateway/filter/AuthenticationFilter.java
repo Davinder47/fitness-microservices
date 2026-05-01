@@ -19,44 +19,36 @@ public class AuthenticationFilter implements HandlerFilterFunction<ServerRespons
 
     public static final List<String> openEndpoints = List.of(
             "/api/users/register",
-            "/api/users/login",
-            "/eureka",
-            "/actuator"
+            "/api/users/auth/login",
+            "/eureka"
     );
 
     @Override
     public ServerResponse filter(ServerRequest request, HandlerFunction<ServerResponse> next) throws Exception {
 
-        String path = request.uri().getPath(); // Using uri().getPath() is more reliable
-        System.out.println("Incoming request path: " + path); // Debugging line
+        String path = request.uri().getPath();
+        System.out.println("Incoming path: " + path);
 
-        System.out.println("Checking path: " + path);
-        // Check if path starts with or contains the open endpoints
-        boolean isPublicEndpoint = openEndpoints.stream()
-                .anyMatch(path::contains);
+        boolean isPublic = openEndpoints.stream().anyMatch(path::contains);
 
-        System.out.println("Is public endpoint: " + isPublicEndpoint);
-
-        if (!isPublicEndpoint) {
+        if (!isPublic) {
             List<String> authHeaders = request.headers().asHttpHeaders().get("Authorization");
 
             if (authHeaders == null || authHeaders.isEmpty()) {
-                System.out.println("Missing Authorization Header for: " + path);
                 return ServerResponse.status(HttpStatus.UNAUTHORIZED).build();
             }
 
-            String authHeader = authHeaders.get(0);
+            String token = authHeaders.get(0);
 
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                authHeader = authHeader.substring(7);
-            } else {
+            if (!token.startsWith("Bearer ")) {
                 return ServerResponse.status(HttpStatus.UNAUTHORIZED).build();
             }
+
+            token = token.substring(7);
 
             try {
-                jwtUtil.validateToken(authHeader);
+                jwtUtil.validateToken(token);
             } catch (Exception e) {
-                System.out.println("Token validation failed: " + e.getMessage());
                 return ServerResponse.status(HttpStatus.UNAUTHORIZED).build();
             }
         }
