@@ -10,9 +10,8 @@ import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.ServerResponse;
 
 import java.util.List;
-import java.util.function.Predicate;
 
-@Component
+@Component("AuthenticationFilter")
 public class AuthenticationFilter implements HandlerFilterFunction<ServerResponse, ServerResponse> {
 
     @Autowired
@@ -21,20 +20,28 @@ public class AuthenticationFilter implements HandlerFilterFunction<ServerRespons
     public static final List<String> openEndpoints = List.of(
             "/api/users/register",
             "/api/users/login",
-            "/eureka"
+            "/eureka",
+            "/actuator"
     );
 
     @Override
-    // Changed 'handle' to 'filter' to match the interface requirements
     public ServerResponse filter(ServerRequest request, HandlerFunction<ServerResponse> next) throws Exception {
 
-        Predicate<ServerRequest> isSecured = r -> openEndpoints.stream()
-                .noneMatch(uri -> r.path().contains(uri));
+        String path = request.uri().getPath(); // Using uri().getPath() is more reliable
+        System.out.println("Incoming request path: " + path); // Debugging line
 
-        if (isSecured.test(request)) {
+        System.out.println("Checking path: " + path);
+        // Check if path starts with or contains the open endpoints
+        boolean isPublicEndpoint = openEndpoints.stream()
+                .anyMatch(path::contains);
+
+        System.out.println("Is public endpoint: " + isPublicEndpoint);
+
+        if (!isPublicEndpoint) {
             List<String> authHeaders = request.headers().asHttpHeaders().get("Authorization");
 
             if (authHeaders == null || authHeaders.isEmpty()) {
+                System.out.println("Missing Authorization Header for: " + path);
                 return ServerResponse.status(HttpStatus.UNAUTHORIZED).build();
             }
 
@@ -49,11 +56,11 @@ public class AuthenticationFilter implements HandlerFilterFunction<ServerRespons
             try {
                 jwtUtil.validateToken(authHeader);
             } catch (Exception e) {
+                System.out.println("Token validation failed: " + e.getMessage());
                 return ServerResponse.status(HttpStatus.UNAUTHORIZED).build();
             }
         }
 
-        // Changed this call to 'next.handle(request)' as well
         return next.handle(request);
     }
 }

@@ -58,7 +58,6 @@ public class UserService {
         return UserResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
-                .password(user.getPassword())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .createdAt(user.getCreatedAt())

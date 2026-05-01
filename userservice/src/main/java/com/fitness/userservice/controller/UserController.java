@@ -30,7 +30,7 @@ public class UserController {
         return ResponseEntity.ok(userService.register(request));
     }
 
-    @PostMapping("/login")
+    @PostMapping("auth/login")
     public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request) {
         // This calls the login method we added to UserService
         String token = userService.login(request);
