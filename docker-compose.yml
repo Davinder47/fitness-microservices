@@ -12,6 +12,19 @@ services:
     ports:
       - "5432:5432"
 
+  mongodb:
+    image: mongo:7
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
   eureka:
     build: ./eureka
     container_name: eureka-server
@@ -32,6 +45,36 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
     ports:
       - "8081:8081"
+
+  activity-service:
+    build: ./activityservice
+    container_name: activity-service
+    depends_on:
+      - mongodb
+      - rabbitmq
+      - eureka
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/fitnessactivity
+      RABBIT_HOST: rabbitmq
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+    ports:
+      - "8082:8082"
+
+  ai-service:
+    build: ./aiservice
+    container_name: ai-service
+    depends_on:
+      - mongodb
+      - rabbitmq
+      - eureka
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/fitnessrecommendation
+      RABBIT_HOST: rabbitmq
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+      GEMINI_API_URL: your_url_here
+      GEMINI_API_KEY: your_key_here
+    ports:
+      - "8083:8083"
 
   api-gateway:
     build: ./api-gateway
