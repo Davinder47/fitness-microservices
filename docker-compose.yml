@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      POSTGRES_DB: fitness_user_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: dell3521
+    ports:
+      - "5432:5432"
+
+  eureka:
+    build: ./eureka
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+
+  user-service:
+    build: ./userservice
+    container_name: user-service
+    depends_on:
+      - postgres
+      - eureka
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/fitness_user_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: dell3521
+      JWT_SECRET: yourFitnessAppSuperSecretKey123456789012345
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+    ports:
+      - "8081:8081"
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    depends_on:
+      - eureka
+      - user-service
+    environment:
+      JWT_SECRET: yourFitnessAppSuperSecretKey123456789012345
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+    ports:
+      - "8084:8084"
